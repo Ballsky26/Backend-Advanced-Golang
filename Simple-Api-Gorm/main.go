@@ -44,37 +44,52 @@ func rowToStruct(rows *sql.Rows, dest interface{}) error {
 	return nil
 }
 
-func postHandler(c *gin.Context, db *sql.DB) {
-	var newStudent newStudent
+func postHandler(c *gin.Context, db *gorm.DB) {
+	// var newStudent newStudent
 
-	if c.Bind(&newStudent) == nil {
-		_, err := db.Exec("insert into students values ($1,$2,$3,$4,$5)", newStudent.Student_id, newStudent.Student_name, newStudent.Student_age, newStudent.Student_address, newStudent.Student_phone_no)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		}
+	// if c.Bind(&newStudent) == nil {
+	// 	_, err := db.Exec("insert into students values ($1,$2,$3,$4,$5)", newStudent.Student_id, newStudent.Student_name, newStudent.Student_age, newStudent.Student_address, newStudent.Student_phone_no)
+	// 	if err != nil {
+	// 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	// 	}
 
-		c.JSON(http.StatusOK, gin.H{"message": "success create"})
-	}
+	// 	c.JSON(http.StatusOK, gin.H{"message": "success create"})
+	// }
 
-	c.JSON(http.StatusBadRequest, gin.H{"message": "error"})
+	// c.JSON(http.StatusBadRequest, gin.H{"message": "error"})
+
+	var newStudent []newStudent
+	c.Bind(&newStudent)
+	db.Create(&newStudent)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success create",
+		"data":    newStudent,
+	})
 }
 
-func getAllHandler(c *gin.Context, db *sql.DB) {
+func getAllHandler(c *gin.Context, db *gorm.DB) {
+	// var newStudent []newStudent
+
+	// row, err := db.Query("select * from students")
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// }
+
+	// rowToStruct(row, &newStudent)
+
+	// if newStudent == nil {
+	// 	c.JSON(http.StatusNotFound, gin.H{"message": "data not found"})
+	// 	return
+	// }
+
+	// c.JSON(http.StatusOK, gin.H{"data": newStudent})
+
 	var newStudent []newStudent
-
-	row, err := db.Query("select * from students")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-
-	rowToStruct(row, &newStudent)
-
-	if newStudent == nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "data not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": newStudent})
+	db.Find(&newStudent)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success find all",
+		"data":    newStudent,
+	})
 
 }
 
@@ -138,20 +153,13 @@ func setupRouter() *gin.Engine {
 
 	r := gin.Default()
 
-	// r.GET("/", func(ctx *gin.Context) {
-	// 	ctx.JSON(http.StatusOK, gin.H{
-	// 		"status": "success",
-	// 		"value":  "hello world",
-	// 	})
-	// })
+	r.POST("/student", func(ctx *gin.Context) {
+		postHandler(ctx, db)
+	})
 
-	// r.POST("/student", func(ctx *gin.Context) {
-	// 	postHandler(ctx, db)
-	// })
-
-	// r.GET("/student", func(ctx *gin.Context) {
-	// 	getAllHandler(ctx, db)
-	// })
+	r.GET("/student", func(ctx *gin.Context) {
+		getAllHandler(ctx, db)
+	})
 
 	// r.GET("/student/:student_id", func(ctx *gin.Context) {
 	// 	getHandler(ctx, db)
