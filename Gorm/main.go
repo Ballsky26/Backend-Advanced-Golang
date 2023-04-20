@@ -32,4 +32,22 @@ func main() {
 
 func Migrate() {
 	DB.AutoMigrate(&models.Student{})
+
+	data := models.Student{}
+	if DB.Find(&data).RecordNotFound() {
+		fmt.Println("=================== Run Seeder User ======================")
+		seederUser()
+	}
+}
+
+func seederUser() {
+	data := models.Student{
+		Student_id:       1,
+		Student_name:     "Dono",
+		Student_age:      20,
+		Student_address:  "Jakarta",
+		Student_phone_no: "0123456789",
+	}
+
+	DB.Create(&data)
 }
