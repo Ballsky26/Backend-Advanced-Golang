@@ -96,6 +96,35 @@ func getHandler(c *gin.Context, db *sql.DB) {
 	c.JSON(http.StatusOK, gin.H{"data": newStudent})
 }
 
+func putHandler(c *gin.Context, db *sql.DB) {
+	var newStudent newStudent
+
+	studentId := c.Param("student_id")
+
+	if c.Bind(&newStudent) == nil {
+		_, err := db.Exec("update students set student_name=$1 where student_id=$2", newStudent.Student_name, studentId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "success update"})
+	}
+
+}
+
+func delHandler(c *gin.Context, db *sql.DB) {
+	studentId := c.Param("student_id")
+
+	_, err := db.Exec("delete from students where student_id=$1", studentId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success delete"})
+
+}
+
 func setupRouter() *gin.Engine {
 	conn := "postgresql://postgres:1234@127.0.0.1/postgres?sslmode=disable"
 	db, err := sql.Open("postgres", conn)
@@ -104,6 +133,13 @@ func setupRouter() *gin.Engine {
 	}
 
 	r := gin.Default()
+
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status": "success",
+			"value":  "hello world",
+		})
+	})
 
 	r.POST("/student", func(ctx *gin.Context) {
 		postHandler(ctx, db)
@@ -116,11 +152,22 @@ func setupRouter() *gin.Engine {
 	r.GET("/student/:student_id", func(ctx *gin.Context) {
 		getHandler(ctx, db)
 	})
+
+	r.PUT("/student/:student_id", func(ctx *gin.Context) {
+		putHandler(ctx, db)
+	})
+
+	r.DELETE("/student/:student_id", func(ctx *gin.Context) {
+		delHandler(ctx, db)
+	})
+
 	return r
+
 }
 
 func main() {
 	r := setupRouter()
 
-	r.Run(":8080")
+	r.Run()
+
 }
