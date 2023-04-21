@@ -93,39 +93,71 @@ func getAllHandler(c *gin.Context, db *gorm.DB) {
 
 }
 
-func getHandler(c *gin.Context, db *sql.DB) {
-	var newStudent []newStudent
+func getHandler(c *gin.Context, db *gorm.DB) {
+	// var newStudent []newStudent
 
+	// studentId := c.Param("student_id")
+
+	// row, err := db.Query("select * from students where student_id = $1", studentId)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// }
+
+	// rowToStruct(row, &newStudent)
+
+	// if newStudent == nil {
+	// 	c.JSON(http.StatusNotFound, gin.H{"message": "data not found"})
+	// 	return
+	// }
+
+	// c.JSON(http.StatusOK, gin.H{"data": newStudent})
+
+	var newStudent []newStudent
 	studentId := c.Param("student_id")
 
-	row, err := db.Query("select * from students where student_id = $1", studentId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-
-	rowToStruct(row, &newStudent)
-
-	if newStudent == nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "data not found"})
+	if db.Find(&newStudent, "student_id=?", studentId).RecordNotFound() {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "data not found",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": newStudent})
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success find by id",
+		"data":    newStudent,
+	})
 }
 
-func putHandler(c *gin.Context, db *sql.DB) {
+func putHandler(c *gin.Context, db *gorm.DB) {
+	// var newStudent newStudent
+
+	// studentId := c.Param("student_id")
+
+	// if c.Bind(&newStudent) == nil {
+	// 	_, err := db.Exec("update students set student_name=$1 where student_id=$2", newStudent.Student_name, studentId)
+	// 	if err != nil {
+	// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	}
+
+	// 	c.JSON(http.StatusOK, gin.H{"message": "success update"})
+	// }
+
 	var newStudent newStudent
-
 	studentId := c.Param("student_id")
-
-	if c.Bind(&newStudent) == nil {
-		_, err := db.Exec("update students set student_name=$1 where student_id=$2", newStudent.Student_name, studentId)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "success update"})
+	if db.Find(&newStudent, "student_id=?", studentId).RecordNotFound() {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "not found",
+		})
+		return
 	}
+
+	var reqStudent = newStudent
+	c.Bind(&reqStudent)
+	db.Model(&newStudent).Where("student_id=?", studentId).Update(reqStudent)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success update",
+		"data":    reqStudent,
+	})
 
 }
 
@@ -161,13 +193,13 @@ func setupRouter() *gin.Engine {
 		getAllHandler(ctx, db)
 	})
 
-	// r.GET("/student/:student_id", func(ctx *gin.Context) {
-	// 	getHandler(ctx, db)
-	// })
+	r.GET("/student/:student_id", func(ctx *gin.Context) {
+		getHandler(ctx, db)
+	})
 
-	// r.PUT("/student/:student_id", func(ctx *gin.Context) {
-	// 	putHandler(ctx, db)
-	// })
+	r.PUT("/student/:student_id", func(ctx *gin.Context) {
+		putHandler(ctx, db)
+	})
 
 	// r.DELETE("/student/:student_id", func(ctx *gin.Context) {
 	// 	delHandler(ctx, db)
