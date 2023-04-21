@@ -1,12 +1,10 @@
 package main
 
 import (
-	"database/sql"
 	_ "database/sql" // add this
 	"fmt"
 	"log"
 	"net/http"
-	"reflect"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -21,28 +19,28 @@ type newStudent struct {
 	Student_phone_no string `json:"student_phone_no" binding:"required"`
 }
 
-func rowToStruct(rows *sql.Rows, dest interface{}) error {
-	destv := reflect.ValueOf(dest).Elem()
+// func rowToStruct(rows *sql.Rows, dest interface{}) error {
+// 	destv := reflect.ValueOf(dest).Elem()
 
-	args := make([]interface{}, destv.Type().Elem().NumField())
+// 	args := make([]interface{}, destv.Type().Elem().NumField())
 
-	for rows.Next() {
-		rowp := reflect.New(destv.Type().Elem())
-		rowv := rowp.Elem()
+// 	for rows.Next() {
+// 		rowp := reflect.New(destv.Type().Elem())
+// 		rowv := rowp.Elem()
 
-		for i := 0; i < rowv.NumField(); i++ {
-			args[i] = rowv.Field(i).Addr().Interface()
-		}
+// 		for i := 0; i < rowv.NumField(); i++ {
+// 			args[i] = rowv.Field(i).Addr().Interface()
+// 		}
 
-		if err := rows.Scan(args...); err != nil {
-			return err
-		}
+// 		if err := rows.Scan(args...); err != nil {
+// 			return err
+// 		}
 
-		destv.Set(reflect.Append(destv, rowv))
-	}
+// 		destv.Set(reflect.Append(destv, rowv))
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func postHandler(c *gin.Context, db *gorm.DB) {
 	// var newStudent newStudent
