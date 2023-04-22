@@ -1,4 +1,4 @@
-package main
+package main_log
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -10,7 +10,7 @@ func init() {
 	// log.SetLevel(log.WarnLevel)
 }
 
-func main() {
+func main_log() {
 	log.Info("Hello World")
 
 	log.WithFields(log.Fields{
